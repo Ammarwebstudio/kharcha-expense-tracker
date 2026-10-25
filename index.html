@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Kharcha — Expense Tracker</title>
+    <meta
+      name="description"
+      content="Track your daily expenses with Kharcha. Add, edit, search and categorize expenses and see where your money goes."
+    />
+    <meta name="theme-color" content="#12253b" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2312253b'/%3E%3Cpath d='M11.5 6v20' stroke='%23e5604f' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M15.5 11.5h9M15.5 16.5h9M15.5 21.5h5.5' stroke='%23fafbf8' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Icon sprite: use as <svg class="i"><use href="#i-edit"/></svg> -->
+    <svg
+      width="0"
+      height="0"
+      style="position: absolute"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <symbol id="i-edit" viewBox="0 0 24 24">
+        <path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3z" />
+        <path d="m14.5 7.5 3 3" />
+      </symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24">
+        <path d="M4 7h16" />
+        <path d="M9 7V4.5h6V7" />
+        <path d="M6.5 7l.8 12a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-12" />
+        <path d="M10 11v6M14 11v6" />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24">
+        <path d="M12 5v14M5 12h14" />
+      </symbol>
+      <symbol id="i-search" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="6.5" />
+        <path d="m20 20-4-4" />
+      </symbol>
+      <symbol id="i-close" viewBox="0 0 24 24">
+        <path d="M6 6l12 12M18 6 6 18" />
+      </symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24">
+        <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
+        <path d="M8 3v4M16 3v4M3.5 10h17" />
+      </symbol>
+    </svg>
+
+    <!--  TOP BAR  -->
+    <header class="topbar wrap">
+      <a class="brand" href="#" aria-label="Kharcha home">
+        <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect class="mark-bg" width="32" height="32" rx="8" />
+          <path
+            class="mark-margin"
+            d="M11.5 6v20"
+            stroke-width="1.6"
+            stroke-linecap="round"
+          />
+          <path
+            class="mark-line"
+            d="M15.5 11.5h9M15.5 16.5h9M15.5 21.5h5.5"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+        </svg>
+        <span>
+          <span class="brand__name">Kharcha</span>
+          <span class="brand__sub">Your personal expense ledger</span>
+        </span>
+      </a>
+
+      <div class="topbar__actions">
+        <button class="history-btn" id="history-btn" type="button">
+          <svg class="i" aria-hidden="true">
+            <use href="#i-calendar" />
+          </svg>
+          <span>History</span>
+        </button>
+
+        <button
+          class="theme-toggle history-btn"
+          id="theme-toggle"
+          type="button"
+          aria-label="Switch color theme"
+          aria-pressed="false"
+        >
+          🌙 Dark mode
+        </button>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="intro" aria-labelledby="page-title">
+        <h1 class="intro__title" id="page-title">
+          Every rupee, accounted for.
+        </h1>
+        <p class="intro__text">
+          Add an expense, find it again in seconds, and see where your money
+          goes.
+        </p>
+      </section>
+
+      <!-- SUMMARY -->
+      <section class="summary" aria-label="Spending summary">
+        <div class="summary__item summary__item--total">
+          <p class="summary__label">Total expenses</p>
+          <p class="summary__value">
+            <span class="summary__figure"
+              ><span class="currency">Rs</span
+              ><span id="total-amount">0</span></span
+            >
+          </p>
+          <p class="summary__note">All recorded entries</p>
+        </div>
+        <div class="summary__item">
+          <p class="summary__label">Transactions</p>
+          <p class="summary__value" id="transaction-count">0</p>
+          <p class="summary__note">Entries recorded</p>
+        </div>
+      </section>
+
+      <div class="layout">
+        <section class="sheet form-sheet" aria-labelledby="form-title">
+          <div class="sheet__head">
+            <h2 class="sheet__title" id="form-title">New expense</h2>
+            <p class="sheet__desc">
+              Fill in the details and add it to your ledger.
+            </p>
+          </div>
+          <form
+            class="sheet__body form"
+            id="expense-form"
+            novalidate
+            autocomplete="off"
+          >
+            <div class="field">
+              <label class="field__label" for="expense-name"
+                >Expense name</label
+              >
+              <input
+                class="input"
+                id="expense-name"
+                name="name"
+                type="text"
+                placeholder="e.g. Weekly groceries"
+                maxlength="60"
+                required
+              />
+              <p class="field__error" hidden>Enter a name for this expense.</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="expense-amount">Amount</label>
+              <div class="affix">
+                <span class="affix__pre">Rs</span>
+                <input
+                  class="input"
+                  id="expense-amount"
+                  name="amount"
+                  type="number"
+                  inputmode="decimal"
+                  min="0"
+                  step="any"
+                  placeholder="0"
+                  required
+                />
+              </div>
+              <p class="field__error" hidden>
+                Enter an amount between 1 and 99,999,999.
+              </p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="expense-category"
+                >Category</label
+              >
+              <select
+                class="input input--select"
+                id="expense-category"
+                name="category"
+                required
+              >
+                <option value="" disabled selected>Choose a category</option>
+                <option value="food">🍔 Food</option>
+                <option value="transport">🚗 Transport</option>
+                <option value="shopping">🛍️ Shopping</option>
+                <option value="bills">💡 Bills</option>
+                <option value="health">💊 Health</option>
+                <option value="entertainment">🎬 Entertainment</option>
+                <option value="education">📚 Education</option>
+                <option value="other">📦 Other</option>
+              </select>
+              <p class="field__error" hidden>Pick a category.</p>
+            </div>
+            <button class="btn btn--primary btn--block" type="submit">
+              <svg class="i" aria-hidden="true"><use href="#i-plus" /></svg>
+              Add expense
+            </button>
+          </form>
+        </section>
+
+        <!-- EXPENSE LIST -->
+        <section class="sheet ledger" aria-labelledby="list-title">
+          <div class="ledger__bar">
+            <div>
+              <h2 class="sheet__title" id="list-title">Expenses</h2>
+              <p class="sheet__desc">Everything you've logged so far.</p>
+            </div>
+            <div class="ledger__tools">
+              <p class="ledger__count" id="results-count" aria-live="polite">
+                0 entries
+              </p>
+            </div>
+          </div>
+          <div class="toolbar">
+            <div class="search">
+              <label class="sr-only" for="search-input"
+                >Search expenses by name</label
+              >
+              <svg class="i" aria-hidden="true"><use href="#i-search" /></svg>
+              <input
+                class="input"
+                id="search-input"
+                type="search"
+                placeholder="Search by name"
+                autocomplete="off"
+              />
+            </div>
+            <div>
+              <label class="sr-only" for="filter-category"
+                >Filter by category</label
+              >
+              <select class="input input--select" id="filter-category">
+                <option value="all">All categories</option>
+                <option value="food">🍔 Food</option>
+                <option value="transport">🚗 Transport</option>
+                <option value="shopping">🛍️ Shopping</option>
+                <option value="bills">💡 Bills</option>
+                <option value="health">💊 Health</option>
+                <option value="entertainment">🎬 Entertainment</option>
+                <option value="education">📚 Education</option>
+                <option value="other">📦 Other</option>
+              </select>
+            </div>
+          </div>
+          <ul class="expense-list" id="expense-list"></ul>
+          <div class="state" id="empty-state" hidden>
+            <svg
+              class="state__art"
+              viewBox="0 0 160 120"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                class="ill-paper"
+                d="M80 30c-10-6-30-8-52-4v66c22-4 42-2 52 4 10-6 30-8 52-4V26c-22-4-42-2-52 4z"
+              />
+              <path class="ill-ink" d="M80 30v66" />
+              <path
+                class="ill-line"
+                d="M44 44h24M44 56h24M44 68h24M92 44h26M92 56h26M92 68h16"
+              />
+              <path class="ill-red" d="M37 28v62" />
+              <path class="ill-pencil" d="M114 100l2-8 18-18 6 6-18 18-8 2z" />
+            </svg>
+            <h3 class="state__title">No expenses yet</h3>
+            <p class="state__text">
+              Add your first expense using the form and it will show up here.
+            </p>
+          </div>
+          <div class="state" id="no-results-state" hidden>
+            <svg
+              class="state__art"
+              viewBox="0 0 160 120"
+              fill="none"
+              aria-hidden="true"
+            >
+              <rect
+                class="ill-paper"
+                x="34"
+                y="18"
+                width="78"
+                height="88"
+                rx="6"
+              />
+              <path class="ill-red" d="M44 18v88" />
+              <path class="ill-line" d="M54 38h36M54 52h48M54 66h30M54 80h24" />
+              <circle class="ill-lens" cx="100" cy="72" r="20" />
+              <path class="ill-handle" d="M114.5 86.5 132 104" />
+              <path class="ill-x" d="M93 65l14 14M107 65 93 79" />
+            </svg>
+            <h3 class="state__title">No results found</h3>
+            <p class="state__text">
+              Nothing matches your search and category filter. Try a different
+              name or category.
+            </p>
+            <button
+              class="btn btn--ghost btn--sm"
+              type="button"
+              id="clear-filters"
+            >
+              Clear filters
+            </button>
+          </div>
+          <div class="ledger__foot" id="ledger-foot" hidden>
+            <button class="link-danger" type="button" id="clear-all-btn">
+              Clear all expenses
+            </button>
+          </div>
+        </section>
+
+        <!--  CATEGORY BREAKDOWN -->
+        <section
+          class="sheet breakdown-sheet"
+          aria-labelledby="breakdown-title"
+        >
+          <div class="sheet__head">
+            <h2 class="sheet__title" id="breakdown-title">
+              Spending by category
+            </h2>
+            <p class="sheet__desc">
+              Each bar is that category's share of your total.
+            </p>
+          </div>
+          <div class="sheet__body">
+            <ul class="breakdown" id="breakdown-list">
+              <li class="breakdown__item" data-category="bills" style="--i: 0">
+                <div class="breakdown__row">
+                  <span class="breakdown__emoji" aria-hidden="true">💡</span>
+                  <span class="breakdown__name">Bills</span>
+                  <span class="breakdown__amount"
+                    ><span class="currency">Rs</span>0</span
+                  >
+                  <span class="breakdown__pct">0%</span>
+                </div>
+                <div
+                  class="bar"
+                  role="progressbar"
+                  aria-label="Bills share of total spending"
+                  aria-valuenow="0"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
+                  <span class="bar__fill" style="--pct: 0%"></span>
+                </div>
+              </li>
+              <li class="breakdown__item" data-category="food" style="--i: 1">
+                <div class="breakdown__row">
+                  <span class="breakdown__emoji" aria-hidden="true">🍔</span>
+                  <span class="breakdown__name">Food</span>
+                  <span class="breakdown__amount"
+                    ><span class="currency">Rs</span>0</span
+                  >
+                  <span class="breakdown__pct">0%</span>
+                </div>
+                <div
+                  class="bar"
+                  role="progressbar"
+                  aria-label="Food share of total spending"
+                  aria-valuenow="0"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
+                  <span class="bar__fill" style="--pct: 0%"></span>
+                </div>
+              </li>
+              <li
+                class="breakdown__item"
+                data-category="shopping"
+                style="--i: 2"
+              >
+                <div class="breakdown__row">
+                  <span class="breakdown__emoji" aria-hidden="true">🛍️</span>
+                  <span class="breakdown__name">Shopping</span>
+                  <span class="breakdown__amount"
+                    ><span class="currency">Rs</span>0</span
+                  >
+                  <span class="breakdown__pct">0%</span>
+                </div>
+                <div
+                  class="bar"
+                  role="progressbar"
+                  aria-label="Shopping share of total spending"
+                  aria-valuenow="0"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
+                  <span class="bar__fill" style="--pct: 0%"></span>
+                </div>
+              </li>
+              <li
+                class="breakdown__item"
+                data-category="education"
+                style="--i: 3"
+              >
+                <div class="breakdown__row">
+                  <span class="breakdown__emoji" aria-hidden="true">📚</span>
+                  <span class="breakdown__name">Education</span>
+                  <span class="breakdown__amount"
+                    ><span class="currency">Rs</span>0</span
+                  >
+                  <span class="breakdown__pct">0%</span>
+                </div>
+                <div
+                  class="bar"
+                  role="progressbar"
+                  aria-label="Education share of total spending"
+                  aria-valuenow="0"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
+                  <span class="bar__fill" style="--pct: 0%"></span>
+                </div>
+              </li>
+              <li class="breakdown__item" data-category="health" style="--i: 4">
+                <div class="breakdown__row">
+                  <span class="breakdown__emoji" aria-hidden="true">💊</span>
+                  <span class="breakdown__name">Health</span>
+                  <span class="breakdown__amount"
+                    ><span class="currency">Rs</span>0</span
+                  >
+                  <span class="breakdown__pct">0%</span>
+                </div>
+                <div
+                  class="bar"
+                  role="progressbar"
+                  aria-label="Health share of total spending"
+                  aria-valuenow="0"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
+                  <span class="bar__fill" style="--pct: 0%"></span>
+                </div>
+              </li>
+              <li
+                class="breakdown__item"
+                data-category="entertainment"
+                style="--i: 5"
+              >
+                <div class="breakdown__row">
+                  <span class="breakdown__emoji" aria-hidden="true">🎬</span>
+                  <span class="breakdown__name">Entertainment</span>
+                  <span class="breakdown__amount"
+                    ><span class="currency">Rs</span>0</span
+                  >
+                  <span class="breakdown__pct">0%</span>
+                </div>
+                <div
+                  class="bar"
+                  role="progressbar"
+                  aria-label="Entertainment share of total spending"
+                  aria-valuenow="0"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
+                  <span class="bar__fill" style="--pct: 0%"></span>
+                </div>
+              </li>
+              <li
+                class="breakdown__item"
+                data-category="transport"
+                style="--i: 7"
+              >
+                <div class="breakdown__row">
+                  <span class="breakdown__emoji" aria-hidden="true">🚗</span>
+                  <span class="breakdown__name">Transport</span>
+                  <span class="breakdown__amount"
+                    ><span class="currency">Rs</span>0</span
+                  >
+                  <span class="breakdown__pct">0%</span>
+                </div>
+                <div
+                  class="bar"
+                  role="progressbar"
+                  aria-label="Transport share of total spending"
+                  aria-valuenow="0"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
+                  <span class="bar__fill" style="--pct: 0%"></span>
+                </div>
+              </li>
+              <li class="breakdown__item" data-category="other" style="--i: 7">
+                <div class="breakdown__row">
+                  <span class="breakdown__emoji" aria-hidden="true">📦</span>
+                  <span class="breakdown__name">Other</span>
+                  <span class="breakdown__amount"
+                    ><span class="currency">Rs</span>0</span
+                  >
+                  <span class="breakdown__pct">0%</span>
+                </div>
+                <div
+                  class="bar"
+                  role="progressbar"
+                  aria-label="Other share of total spending"
+                  aria-valuenow="0"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
+                  <span class="bar__fill" style="--pct: 0%"></span>
+                </div>
+              </li>
+            </ul>
+            <p class="breakdown-empty" id="breakdown-empty" hidden>
+              Add an expense to see how your spending splits up.
+            </p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer wrap">
+      <p>Kharcha saves your entries in this browser only.</p>
+    </footer>
+
+    <!-- DELETED EXPENSE HISTORY MODAL -->
+    <div
+      class="modal"
+      id="history-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="history-title"
+    >
+      <div class="modal__backdrop"></div>
+      <div class="modal__panel">
+        <div class="modal__head">
+          <div>
+            <h2 class="sheet__title" id="history-title">Deleted expenses</h2>
+            <p class="sheet__desc">Expenses you've removed from your ledger.</p>
+          </div>
+          <button
+            class="icon-btn"
+            type="button"
+            data-history-close
+            aria-label="Close history"
+          >
+            <svg class="i" aria-hidden="true">
+              <use href="#i-close" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal__body">
+          <p id="history-empty" hidden>No deleted expenses yet.</p>
+          <ul id="deleted-history-list"></ul>
+          <div class="modal__actions">
+            <button class="btn btn--ghost" id="clear-history-btn" type="button">
+              Clear history
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div
+      class="modal"
+      id="edit-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-title"
+    >
+      <div class="modal__backdrop" data-close></div>
+      <div class="modal__panel">
+        <div class="modal__head">
+          <div>
+            <h2 class="sheet__title" id="edit-title">Edit expense</h2>
+            <p class="sheet__desc">
+              Update the details, then save your changes.
+            </p>
+          </div>
+          <button
+            class="icon-btn"
+            id="close-modal-btn"
+            type="button"
+            data-close
+            aria-label="Close"
+          >
+            <svg class="i" aria-hidden="true"><use href="#i-close" /></svg>
+          </button>
+        </div>
+        <form
+          class="modal__body form"
+          id="edit-form"
+          novalidate
+          autocomplete="off"
+        >
+          <div class="field">
+            <label class="field__label" for="edit-name">Expense name</label>
+            <input
+              class="input"
+              id="edit-name"
+              name="name"
+              type="text"
+              maxlength="60"
+              required
+            />
+            <p class="field__error" hidden>Enter a name for this expense.</p>
+          </div>
+          <div class="field">
+            <label class="field__label" for="edit-amount">Amount</label>
+            <div class="affix">
+              <span class="affix__pre">Rs</span>
+              <input
+                class="input"
+                id="edit-amount"
+                name="amount"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="any"
+                required
+              />
+            </div>
+            <p class="field__error" hidden>
+              Enter an amount between 1 and 99,999,999.
+            </p>
+          </div>
+          <div class="field">
+            <label class="field__label" for="edit-category">Category</label>
+            <select
+              class="input input--select"
+              id="edit-category"
+              name="category"
+              required
+            >
+              <option value="" disabled selected>Choose a category</option>
+              <option value="food">🍔 Food</option>
+              <option value="transport">🚗 Transport</option>
+              <option value="shopping">🛍️ Shopping</option>
+              <option value="bills">💡 Bills</option>
+              <option value="health">💊 Health</option>
+              <option value="entertainment">🎬 Entertainment</option>
+              <option value="education">📚 Education</option>
+              <option value="other">📦 Other</option>
+            </select>
+            <p class="field__error" hidden>Pick a category.</p>
+          </div>
+          <div class="modal__actions">
+            <button
+              class="btn btn--ghost"
+              id="cancel-modal-btn"
+              type="button"
+              data-close
+            >
+              Cancel
+            </button>
+            <button class="btn btn--primary" type="submit">Save changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- CLEAR ALL CONFIRMATION -->
+    <div
+      class="modal"
+      id="confirm-modal"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="confirm-title"
+      aria-describedby="confirm-text"
+    >
+      <div class="modal__backdrop"></div>
+      <div class="modal__panel">
+        <div class="modal__head">
+          <div>
+            <h2 class="sheet__title" id="confirm-title">Clear all expenses?</h2>
+            <p class="sheet__desc" id="confirm-text"></p>
+          </div>
+        </div>
+        <div class="modal__body">
+          <div class="modal__actions">
+            <button
+              class="btn btn--ghost"
+              type="button"
+              id="confirm-cancel-btn"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn btn--danger-solid"
+              type="button"
+              id="confirm-ok-btn"
+            >
+              Yes, clear all
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="script.js" defer></script>
+  </body>
+</html>
